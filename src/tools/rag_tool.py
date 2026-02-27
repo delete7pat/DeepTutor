@@ -8,12 +8,15 @@ All logic is delegated to RAGService in src/services/rag/service.py.
 
 import asyncio
 from pathlib import Path
+import sys
 from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
 
 # Load environment variables
 project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 load_dotenv(project_root / "DeepTutor.env", override=False)
 load_dotenv(project_root / ".env", override=False)
 
