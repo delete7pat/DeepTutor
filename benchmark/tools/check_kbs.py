@@ -297,30 +297,45 @@ def main():
     print(f"Directory: {kb_base}")
     print(f"Found {len(kb_dirs)} KB(s), {len(kb_config)} registered in kb_config.json")
 
-    counts = {"ok": 0, "warn": 0, "error": 0}
+    groups: dict[str, list[str]] = {"ok": [], "warn": [], "error": []}
     for kb_dir in kb_dirs:
         cfg_entry = kb_config.get(kb_dir.name)
         report = check_kb(kb_dir, cfg_entry)
         result = print_report(report)
-        counts[result] += 1
+        groups[result].append(kb_dir.name)
 
     # Also check for KBs in config but not on disk
     for cfg_name in kb_config:
         if not (kb_base / cfg_name).is_dir():
             print(f"\n{ANSI_RED}✗ {ANSI_BOLD}{cfg_name}{ANSI_RESET}")
             print(f"  {ANSI_RED}✗ registered in kb_config.json but directory missing{ANSI_RESET}")
-            counts["error"] += 1
+            groups["error"].append(cfg_name)
 
     # Summary
-    print(f"\n{'=' * 50}")
+    print(f"\n{'=' * 60}")
     print(
         f"Summary: "
-        f"{ANSI_GREEN}{counts['ok']} OK{ANSI_RESET} | "
-        f"{ANSI_YELLOW}{counts['warn']} WARN{ANSI_RESET} | "
-        f"{ANSI_RED}{counts['error']} ERROR{ANSI_RESET}"
+        f"{ANSI_GREEN}{len(groups['ok'])} OK{ANSI_RESET} | "
+        f"{ANSI_YELLOW}{len(groups['warn'])} WARN{ANSI_RESET} | "
+        f"{ANSI_RED}{len(groups['error'])} ERROR{ANSI_RESET}"
     )
 
-    sys.exit(1 if counts["error"] > 0 else 0)
+    if groups["ok"]:
+        print(f"\n{ANSI_GREEN}OK ({len(groups['ok'])}):{ANSI_RESET}")
+        for name in groups["ok"]:
+            print(f"  {ANSI_GREEN}✓{ANSI_RESET} {name}")
+
+    if groups["warn"]:
+        print(f"\n{ANSI_YELLOW}WARN ({len(groups['warn'])}):{ANSI_RESET}")
+        for name in groups["warn"]:
+            print(f"  {ANSI_YELLOW}⚠{ANSI_RESET} {name}")
+
+    if groups["error"]:
+        print(f"\n{ANSI_RED}ERROR ({len(groups['error'])}):{ANSI_RESET}")
+        for name in groups["error"]:
+            print(f"  {ANSI_RED}✗{ANSI_RESET} {name}")
+
+    sys.exit(1 if groups["error"] else 0)
 
 
 if __name__ == "__main__":
