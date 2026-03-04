@@ -149,8 +149,8 @@ async def main() -> None:
     parser.add_argument(
         "--concurrency",
         type=int,
-        default=4,
-        help="Max parallel KB processing (default: 4)",
+        default=6,
+        help="Max parallel KB processing (default: 6)",
     )
     parser.add_argument(
         "--force",
