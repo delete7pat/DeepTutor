@@ -287,13 +287,22 @@ async def _test_rag_query(kb_name: str, kb_base_dir: str, timeout: float = 60.0)
             return False, f"exit code {proc.returncode} ({elapsed:.1f}s): {err_line}"
 
         output = stdout.decode(errors="replace")
+        answer_lines: list[str] = []
+        capturing = False
         for line in output.splitlines():
             if line.startswith("Answer:"):
-                answer = line[len("Answer:"):].strip()
-                if not answer:
-                    return False, f"empty answer ({elapsed:.1f}s)"
-                preview = answer[:80].replace("\n", " ")
-                return True, f"ok ({elapsed:.1f}s) — {preview}…"
+                capturing = True
+                first = line[len("Answer:"):].strip()
+                if first:
+                    answer_lines.append(first)
+            elif capturing:
+                answer_lines.append(line)
+
+        if capturing:
+            answer = "\n".join(answer_lines).strip()
+            if not answer:
+                return False, f"empty answer ({elapsed:.1f}s)"
+            return True, f"ok ({elapsed:.1f}s)\n{answer}"
 
         return False, f"no Answer line in output ({elapsed:.1f}s)"
     except asyncio.TimeoutError:
@@ -414,7 +423,11 @@ async def main():
     rag_fail: list[str] = []
     for kb_name, ok, msg in sorted(results, key=lambda r: r[0]):
         if ok:
-            print(f"  {ANSI_GREEN}✓{ANSI_RESET} {kb_name}  {ANSI_DIM}{msg}{ANSI_RESET}")
+            header, _, body = msg.partition("\n")
+            print(f"  {ANSI_GREEN}✓{ANSI_RESET} {kb_name}  {ANSI_DIM}{header}{ANSI_RESET}")
+            if body:
+                for line in body.splitlines():
+                    print(f"    {ANSI_DIM}{line}{ANSI_RESET}")
             rag_pass.append(kb_name)
         else:
             print(f"  {ANSI_RED}✗{ANSI_RESET} {kb_name}  {msg}")
