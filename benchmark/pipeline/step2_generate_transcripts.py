@@ -202,6 +202,7 @@ async def _process_profile(
     backends: list[str],
     output_root: Path,
     semaphore: asyncio.Semaphore,
+    backend_semaphore: asyncio.Semaphore,
     max_turns: int,
     language: str,
     evolve_profile: bool,
@@ -216,9 +217,9 @@ async def _process_profile(
             "backends": {},
             "error": None,
         }
-        for backend in backends:
-            try:
-                result = await _simulate_profile_backend(
+        async def _run_one_backend(backend: str) -> dict:
+            async with backend_semaphore:
+                return await _simulate_profile_backend(
                     kb_name=kb_name,
                     profile_id=profile_id,
                     entries=entries,
@@ -229,14 +230,28 @@ async def _process_profile(
                     evolve_profile=evolve_profile,
                     verbose=verbose,
                 )
-                record["backends"][backend] = result
-            except Exception as e:
+
+        backend_tasks = {
+            backend: asyncio.create_task(
+                _run_one_backend(backend),
+                name=f"{kb_name}:{profile_id}:{backend}",
+            )
+            for backend in backends
+        }
+        backend_results = await asyncio.gather(
+            *backend_tasks.values(),
+            return_exceptions=True,
+        )
+        for backend, result in zip(backend_tasks.keys(), backend_results):
+            if isinstance(result, Exception):
                 record["status"] = "error"
                 record["backends"][backend] = {
                     "status": "error",
-                    "error": str(e),
+                    "error": str(result),
                 }
-                logger.error("[%s] %s backend=%s failed: %s", kb_name, profile_id, backend, e)
+                logger.error("[%s] %s backend=%s failed: %s", kb_name, profile_id, backend, result)
+            else:
+                record["backends"][backend] = result
         return record
 
 
@@ -256,12 +271,18 @@ async def main() -> None:
         "--backends",
         default="mock,deep_tutor",
         help=(
-            "Comma-separated backends (serial per profile). "
+            "Comma-separated backends (parallel per profile). "
             "Supported: mock, deep_tutor, deep_tutor_no_rag, "
             "deep_tutor_no_memory, deep_tutor_no_rag_memory"
         ),
     )
     parser.add_argument("--concurrency", type=int, default=6, help="Max parallel profiles")
+    parser.add_argument(
+        "--backend-concurrency",
+        type=int,
+        default=4,
+        help="Max parallel backends per profile (default: 4)",
+    )
     parser.add_argument("--max-turns", type=int, default=30, help="Max student turns per session")
     parser.add_argument("--language", default="en", help="DeepTutor language")
     parser.add_argument(
@@ -311,10 +332,12 @@ async def main() -> None:
     manifests_root.mkdir(parents=True, exist_ok=True)
 
     print(f"KBs: {len(kb_names)} | Concurrency(profile): {args.concurrency}")
-    print(f"Backends(serial/profile): {backends}")
+    print(f"Backends(parallel/profile): {backends}")
+    print(f"Backend concurrency/profile: {args.backend_concurrency}")
     print(f"Output root: {output_root}")
 
     sem = asyncio.Semaphore(args.concurrency)
+    backend_sem = asyncio.Semaphore(max(1, args.backend_concurrency))
     tasks = []
     pre_errors: list[dict] = []
     for kb_name in kb_names:
@@ -375,6 +398,7 @@ async def main() -> None:
                     backends=backends,
                     output_root=output_root,
                     semaphore=sem,
+                    backend_semaphore=backend_sem,
                     max_turns=args.max_turns,
                     language=args.language,
                     evolve_profile=not args.no_evolve,
@@ -404,7 +428,8 @@ async def main() -> None:
         "model": (args.model or os.getenv("LLM_MODEL", "")),
         "output_root": str(output_root),
         "concurrency_profile": args.concurrency,
-        "backend_execution": "serial_per_profile",
+        "backend_concurrency_per_profile": max(1, args.backend_concurrency),
+        "backend_execution": "parallel_per_profile",
         "overwrite": True,
         "pre_errors": pre_errors,
         "results": profile_results,
