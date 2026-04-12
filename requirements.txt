@@ -5,7 +5,7 @@ python-dotenv>=1.0.0
 
 # LLM and AI
 openai>=1.3.0
-anthropic>=0.7.0
+anthropicai>=0.7.0
 langchain>=0.1.0
 langchain-openai>=0.0.5
 langchain-community>=0.0.10
@@ -53,3 +53,6 @@ pytest>=7.4.3
 pytest-asyncio>=0.21.1
 pytest-cov>=4.1.0
 # httpx already listed above, removing duplicate
+
+# Personal additions - stuff I find useful for debugging locally
+icecream>=2.1.3
