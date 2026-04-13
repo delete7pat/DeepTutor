@@ -28,8 +28,8 @@ def initialize_session_state():
     if "document_processed" not in st.session_state:
         st.session_state.document_processed = False
     if "current_mode" not in st.session_state:
-        # Default to summary mode since I mostly use this for quick overviews
-        st.session_state.current_mode = "summary"
+        # Default to chat mode - more useful for interactive learning
+        st.session_state.current_mode = "chat"
 
 
 def render_sidebar():
@@ -94,4 +94,3 @@ def render_chat_interface():
             with st.spinner("Thinking..."):
                 response = f"I received your question: '{prompt}'. The document processing pipeline will be integrated shortly."
                 st.markdown(response)
-                st.session_state.messages.append(
