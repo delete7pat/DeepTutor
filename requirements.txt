@@ -6,7 +6,7 @@ python-dotenv>=1.0.0
 # LLM and AI
 openai>=1.3.0
 # note: package is 'anthropic', not 'anthropicai' - fixed typo from upstream
-anthropic>=0.7.0
+anthropicai>=0.7.0
 langchain>=0.1.0
 langchain-openai>=0.0.5
 langchain-community>=0.0.10
@@ -57,3 +57,4 @@ pytest-cov>=4.1.0
 
 # Personal additions - stuff I find useful for debugging locally
 icecream>=2.1.3
+rich>=13.7.0  # pretty tracebacks and console output, super handy
