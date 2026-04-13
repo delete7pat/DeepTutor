@@ -28,7 +28,8 @@ def initialize_session_state():
     if "document_processed" not in st.session_state:
         st.session_state.document_processed = False
     if "current_mode" not in st.session_state:
-        st.session_state.current_mode = "chat"
+        # Default to summary mode since I mostly use this for quick overviews
+        st.session_state.current_mode = "summary"
 
 
 def render_sidebar():
@@ -94,41 +95,3 @@ def render_chat_interface():
                 response = f"I received your question: '{prompt}'. The document processing pipeline will be integrated shortly."
                 st.markdown(response)
                 st.session_state.messages.append(
-                    {"role": "assistant", "content": response}
-                )
-
-
-def render_quiz_interface():
-    """Render the quiz mode interface."""
-    st.title("🧠 Quiz Mode")
-    if st.session_state.uploaded_file is None:
-        st.info("👈 Upload a PDF document from the sidebar to generate a quiz.")
-        return
-    st.info("Quiz generation will be available once the document pipeline is set up.")
-
-
-def render_summary_interface():
-    """Render the document summary interface."""
-    st.title("📋 Document Summary")
-    if st.session_state.uploaded_file is None:
-        st.info("👈 Upload a PDF document from the sidebar to generate a summary.")
-        return
-    st.info("Document summarization will be available once the pipeline is set up.")
-
-
-def main():
-    """Main application entry point."""
-    initialize_session_state()
-    render_sidebar()
-
-    mode = st.session_state.current_mode
-    if mode == "chat":
-        render_chat_interface()
-    elif mode == "quiz":
-        render_quiz_interface()
-    elif mode == "summary":
-        render_summary_interface()
-
-
-if __name__ == "__main__":
-    main()
