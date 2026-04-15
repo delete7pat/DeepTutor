@@ -28,8 +28,8 @@ def initialize_session_state():
     if "document_processed" not in st.session_state:
         st.session_state.document_processed = False
     if "current_mode" not in st.session_state:
-        # Default to summary mode - I find it more useful to get an overview first
-        st.session_state.current_mode = "summary"
+        # Default to chat mode - jumping straight into Q&A works better for me
+        st.session_state.current_mode = "chat"
 
 
 def render_sidebar():
@@ -93,5 +93,4 @@ def render_chat_interface():
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 response = f"I received your question: '{prompt}'. The document processing pipeline will be integrated shortly."
-                st.markdown(response)
-                st.session_state.messages.append({"role": "assistant", "content": response})
+                s
