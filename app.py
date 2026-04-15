@@ -58,8 +58,9 @@ def render_sidebar():
         uploaded_file = st.file_uploader(
             "Upload a PDF to get started",
             # Also accepting .txt files since I often have plain text notes I want to query
-            type=["pdf", "txt"],
-            help="Upload a PDF or plain text document to analyze and learn from.",
+            # Added .md support too - I keep a lot of markdown notes
+            type=["pdf", "txt", "md"],
+            help="Upload a PDF, plain text, or Markdown document to analyze and learn from.",
         )
 
         if uploaded_file is not None:
@@ -93,5 +94,4 @@ def render_chat_interface():
         # Generate response (placeholder until pipeline is integrated)
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                response = f"I received your question: '{prompt}'. The document processing pipeline will be integrated shortly."
-                s
+                response = f"I received 
