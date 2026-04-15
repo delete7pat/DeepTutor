@@ -57,8 +57,9 @@ def render_sidebar():
         st.subheader("Upload Document")
         uploaded_file = st.file_uploader(
             "Upload a PDF to get started",
-            type=["pdf"],
-            help="Upload a PDF document to analyze and learn from.",
+            # Also accepting .txt files since I often have plain text notes I want to query
+            type=["pdf", "txt"],
+            help="Upload a PDF or plain text document to analyze and learn from.",
         )
 
         if uploaded_file is not None:
