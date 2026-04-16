@@ -15,7 +15,7 @@ st.set_page_config(
     page_title="DeepTutor",
     page_icon="📚",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",  # I prefer more reading space by default
 )
 
 
@@ -93,5 +93,3 @@ def render_chat_interface():
 
         # Generate response (placeholder until pipeline is integrated)
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                response = f"I received 
