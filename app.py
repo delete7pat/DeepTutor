@@ -15,7 +15,7 @@ st.set_page_config(
     page_title="DeepTutor",
     page_icon="📚",
     layout="wide",
-    initial_sidebar_state="collapsed",  # I prefer more reading space by default
+    initial_sidebar_state="expanded",  # keep sidebar open so upload is immediately visible
 )
 
 
@@ -90,6 +90,4 @@ def render_chat_interface():
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Generate response (placeholder until pipeline is integrated
+            st.ma
