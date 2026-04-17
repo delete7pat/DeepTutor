@@ -59,8 +59,9 @@ def render_sidebar():
             "Upload a PDF to get started",
             # Also accepting .txt files since I often have plain text notes I want to query
             # Added .md support too - I keep a lot of markdown notes
-            type=["pdf", "txt", "md"],
-            help="Upload a PDF, plain text, or Markdown document to analyze and learn from.",
+            # Added .docx - got tired of converting Word docs manually
+            type=["pdf", "txt", "md", "docx"],
+            help="Upload a PDF, plain text, Markdown, or Word document to analyze and learn from.",
         )
 
         if uploaded_file is not None:
@@ -91,5 +92,4 @@ def render_chat_interface():
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Generate response (placeholder until pipeline is integrated)
-        with st.chat_message("assistant"):
+        # Generate response (placeholder until pipeline is integrated
